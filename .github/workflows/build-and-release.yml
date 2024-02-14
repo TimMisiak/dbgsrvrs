@@ -1,9 +1,12 @@
 name: Build and Release for Windows
 
 on:
-  push:
-    branches:
-      - main  # or your preferred branch
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version Number'  # Description for the input
+        required: true                 # Make this input required
+        default: '1.0.0'               # Default value if none is provided
 
 jobs:
   build-and-release:
@@ -44,8 +47,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{ github.ref }}
-          release_name: Release ${{ github.ref }}
+          tag_name: ${{ github.event.inputs.version }}
+          release_name: Release ${{ github.event.inputs.version }}
           draft: false
           prerelease: false
 
@@ -53,7 +56,6 @@ jobs:
         run: Compress-Archive -Path .\target\release\*.dll, .\target\release\*.exe -DestinationPath .\release.zip
         shell: pwsh
 
-      # Upload .exe and .dll files
       - name: Upload Release Asset
         uses: actions/upload-release-asset@v1
         env:
@@ -63,5 +65,3 @@ jobs:
           asset_path: .\release.zip
           asset_name: DbgSrvRs
           asset_content_type: application/zip
-
-      # Repeat the above step for each .exe and .dll file
