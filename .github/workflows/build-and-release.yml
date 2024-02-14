@@ -57,6 +57,11 @@ jobs:
         run: Compress-Archive -Path .\target\release\*.dll, .\target\release\*.exe -DestinationPath .\release.zip
         shell: pwsh
 
+      - name: List files in the directory
+        run: Get-ChildItem
+        shell: pwsh
+        working-directory: ${{ github.workspace }}
+
       - name: Upload Release Asset
         uses: actions/upload-release-asset@v1
         env:
@@ -66,4 +71,3 @@ jobs:
           asset_path: .\release.zip
           asset_name: DbgSrvRs
           asset_content_type: application/zip
-        working-directory: ${{ github.workspace }}
