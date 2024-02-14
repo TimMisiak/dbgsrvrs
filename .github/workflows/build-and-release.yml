@@ -1,0 +1,67 @@
+name: Build and Release for Windows
+
+on:
+  push:
+    branches:
+      - main  # or your preferred branch
+
+jobs:
+  build-and-release:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      # Set up Rust environment
+      - name: Install Rust toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+          target: x86_64-pc-windows-msvc # Targeting Windows MSVC
+
+      # Build Rust project
+      - name: Build Rust project
+        run: |
+          cargo build --release --target x86_64-pc-windows-msvc
+
+      # Download NuGet package
+      - name: Download NuGet package
+        run: |
+          Invoke-WebRequest -Uri "https://www.nuget.org/api/v2/package/Microsoft.Debugging.Platform.DbgEng/20230731.1609.0" -OutFile "package.nupkg"
+
+      # Extract files from NuGet package
+      - name: Extract necessary files
+        run: |
+          Expand-Archive -Path package.nupkg -DestinationPath nuget_files
+          New-Item -ItemType Directory -Force -Path dbgsrvrs\target\release\content\amd64
+          Copy-Item nuget_files\content\amd64\* dbgsrvrs\target\release\content\amd64
+
+      # Publish as a release
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+          draft: false
+          prerelease: false
+
+      - name: Archive files
+        run: Compress-Archive -Path .\target\release\*.dll, .\target\release\*.exe -DestinationPath .\release.zip
+        shell: pwsh
+
+      # Upload .exe and .dll files
+      - name: Upload Release Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: .\release.zip
+          asset_name: DbgSrvRs
+          asset_content_type: application/zip
+
+      # Repeat the above step for each .exe and .dll file
