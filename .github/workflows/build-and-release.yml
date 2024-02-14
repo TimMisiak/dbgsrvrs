@@ -54,7 +54,7 @@ jobs:
           prerelease: false
 
       - name: Archive files
-        run: Compress-Archive -Path .\target\x86_64-pc-windows-msvc\release\*.dll, .\target\x86_64-pc-windows-msvc\release\*.exe -DestinationPath .\release.zip
+        run: Compress-Archive -Path .\target\x86_64-pc-windows-msvc\release\*.dll, .\target\x86_64-pc-windows-msvc\release\*.exe, .\target\x86_64-pc-windows-msvc\release\deps\dbgsrvrs.pdb -DestinationPath .\release.zip
         shell: pwsh
 
       - name: List files in the directory
