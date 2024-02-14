@@ -38,7 +38,7 @@ jobs:
       - name: Extract necessary files
         run: |
           Expand-Archive -Path package.nupkg -DestinationPath nuget_files
-          Copy-Item nuget_files\content\amd64\* target\release
+          Copy-Item nuget_files\content\amd64\* target\x86_64-pc-windows-msvc\release
         working-directory: ${{ github.workspace }}
 
       # Publish as a release
@@ -54,7 +54,7 @@ jobs:
           prerelease: false
 
       - name: Archive files
-        run: Compress-Archive -Path .\target\release\*.dll, .\target\release\*.exe -DestinationPath .\release.zip
+        run: Compress-Archive -Path .\target\x86_64-pc-windows-msvc\release\*.dll, .\target\x86_64-pc-windows-msvc\release\*.exe -DestinationPath .\release.zip
         shell: pwsh
 
       - name: List files in the directory
@@ -69,5 +69,5 @@ jobs:
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: .\release.zip
-          asset_name: DbgSrvRs
+          asset_name: DbgSrvRs.zip
           asset_content_type: application/zip
