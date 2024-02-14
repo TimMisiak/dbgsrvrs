@@ -32,13 +32,14 @@ jobs:
       - name: Download NuGet package
         run: |
           Invoke-WebRequest -Uri "https://www.nuget.org/api/v2/package/Microsoft.Debugging.Platform.DbgEng/20230731.1609.0" -OutFile "package.nupkg"
+        working-directory: ${{ github.workspace }}
 
       # Extract files from NuGet package
       - name: Extract necessary files
         run: |
           Expand-Archive -Path package.nupkg -DestinationPath nuget_files
-          New-Item -ItemType Directory -Force -Path dbgsrvrs\target\release\content\amd64
-          Copy-Item nuget_files\content\amd64\* dbgsrvrs\target\release\content\amd64
+          Copy-Item nuget_files\content\amd64\* target\release
+        working-directory: ${{ github.workspace }}
 
       # Publish as a release
       - name: Create Release
@@ -65,3 +66,4 @@ jobs:
           asset_path: .\release.zip
           asset_name: DbgSrvRs
           asset_content_type: application/zip
+        working-directory: ${{ github.workspace }}
